@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="utf-8">
+    <script src="jquery-1.10.2.min.js"></script>
+    <title>Title</title>
+</head>
+<body>
+<table border="1">
+    <tr>
+        <td   width= "25% "> 1 </td>
+        <td   width= "25% "> 2 </td>
+        <td   width= "25% "> 3 </td>
+        <td   width= "25% "> 4 </td>
+    </tr>
+    <tr>
+        <td   width= "25% "> 10 </td>
+        <td   width= "25% "> 20 </td>
+        <td   width= "25% "> 30 </td>
+        <td   width= "25% "> 40 </td>
+    </tr>
+    <tr>
+        <td   width= "25% "> 10 </td>
+        <td   width= "25% "> 21 </td>
+        <td   width= "25% "> 30 </td>
+        <td   width= "25% "> 40 </td>
+
+    </tr>
+    <tr>
+        <td   width= "25% "> 11 </td>
+        <td   width= "25% "> 22 </td>
+        <td   width= "25% "> 3 </td>
+        <td   width= "25% "> 42 </td>
+    </tr>
+</table>
+<br/>
+**************合并以后***********************
+<table border="1">
+    <tr>
+        <td   width= "25% "> 1 </td>
+        <td   width= "25% "> 2 </td>
+        <td   width= "25% "> 3 </td>
+        <td   width= "25% "> 4 </td>
+    </tr>
+    <tr>
+        <td   width= "25% " rowspan="2"> 10 </td>
+        <td   width= "25% "> 20 </td>
+        <td   width= "25% " rowspan="2"> 30 </td>
+        <td   width= "25% " rowspan="2"> 40 </td>
+    </tr>
+    <tr>
+        <td   width= "25% "> 21 </td>
+
+    </tr>
+    <tr>
+        <td   width= "25% "> 11 </td>
+        <td   width= "25% "> 22 </td>
+        <td   width= "25% "> 3 </td>
+        <td   width= "25% "> 43 </td>
+    </tr>
+</table>
+
+<!-- 规则：判断上下行列值是否一致，如果一致的话，就各自合并，除了第二列不需要做处理-->
+*************************需要合并的table****************************************
+<table border="1">
+    <tbody id="demo">
+    <tr>
+        <td   width= "25% "> 1 </td>
+        <td   width= "25% "> 2 </td>
+        <td   width= "25% "> 3 </td>
+        <td   width= "25% "> 4 </td>
+    </tr>
+    <tr>
+        <td   width= "25% "> 10 </td>
+        <td   width= "25% "> 20 </td>
+        <td   width= "25% "> 30 </td>
+        <td   width= "25% "> 40 </td>
+    </tr>
+    <tr>
+        <td   width= "25% "> 10 </td>
+        <td   width= "25% "> 21 </td>
+        <td   width= "25% "> 30 </td>
+        <td   width= "25% "> 40 </td>
+
+    </tr>
+    <tr>
+        <td   width= "25% "> 10 </td>
+        <td   width= "25% "> 22 </td>
+        <td   width= "25% "> 30 </td>
+        <td   width= "25% "> 42 </td>
+    </tr>
+    <tr>
+        <td   width= "25% "> 11 </td>
+        <td   width= "25% "> 22 </td>
+        <td   width= "25% "> 3 </td>
+        <td   width= "25% "> 42 </td>
+    </tr>
+    </tbody>
+</table>
+
+<script type="text/javascript">
+    $(function () {
+        rowspans();
+    });
+
+    /**
+     * 根据子单状态合并单元格
+     */
+    function rowspans() {
+        var $tbody = $("#demo");
+        var rowspanCount = 0;
+        var orderTemp = $tbody.children("tr:eq(0)").children("td:eq(0)");
+        //map中存放下标和合并的行数
+        var map = {};
+        var totalRows = $tbody.children();
+        totalRows.each(function (i) {
+            var order = $(this).children("td:eq(0)");
+            if(order.text() == orderTemp.text()) {
+                rowspanCount++;
+            }
+            if(order.text() != orderTemp.text()) {
+                // 放入map
+                map[i-rowspanCount] = rowspanCount;
+                rowspanCount = 1;
+                orderTemp = order;
+            }
+            //最后一个
+            if (i == ($tbody.children().size() - 1)) {
+                map[i-rowspanCount+1] = rowspanCount;
+            }
+        });
+
+        var totalCols = $tbody.children("tr:eq(0)").children().size();
+        totalRows.each(function (i) {
+            var rowCounts = map[i];
+            if (rowCounts) {
+                //删除从i+1到i+count行的前1列
+                for (var j = i + 1; j < i + rowCounts; j++) {
+                    var removeCount = 0;
+                    for (var k = 0; k < totalCols; k++) {
+                        if(k == 1) {
+                            continue;
+                        }
+                        // 下一行的
+                        $tbody.children("tr:eq(" + j + ")").children("td:eq(" + (k - removeCount) + ")").remove();
+                        $tbody.children("tr:eq(" + i + ")").children("td:eq(" + k + ")").attr("rowspan", rowCounts);
+                        removeCount ++;
+                    }
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>
